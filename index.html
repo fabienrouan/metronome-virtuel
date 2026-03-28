@@ -252,19 +252,28 @@ function updateBpm(v,fromSlider){
   document.getElementById('tRange').textContent=t.caractere;
   if(!fromSlider)document.getElementById('sl').value=bpm;
 }
-function swingStep(){
-  const speed=Math.max(1.5,4-bpm/80);
-  pAngle+=pDir*speed;
-  if(pAngle>26||pAngle<-26)pDir*=-1;
-  const rad=pAngle*Math.PI/180,cx=45,cy=18,len=62;
-  const ex=cx+Math.sin(rad)*len,ey=cy+Math.cos(rad)*len;
+let swingStartTime = null;
+
+function swingStep(timestamp){
+  if(!swingStartTime) swingStartTime = timestamp;
+  // Durée d'un aller-retour complet = 2 temps = 2 * (60000/bpm) ms
+  const period = 2 * (60000 / bpm);
+  const elapsed = (timestamp - swingStartTime) % period;
+  // progression de 0 à 1 sur la période
+  const phase = elapsed / period;
+  // sinus donne un mouvement naturel : -1 → +1 → -1
+  const angle = 26 * Math.sin(2 * Math.PI * phase);
+  const rad = angle * Math.PI / 180;
+  const cx=45, cy=18, len=62;
+  const ex = cx + Math.sin(rad) * len;
+  const ey = cy + Math.cos(rad) * len;
   document.getElementById('pendule').setAttribute('x2',ex.toFixed(1));
   document.getElementById('pendule').setAttribute('y2',ey.toFixed(1));
   document.getElementById('lentille').setAttribute('cx',ex.toFixed(1));
   document.getElementById('lentille').setAttribute('cy',ey.toFixed(1));
   document.getElementById('lentille2').setAttribute('cx',ex.toFixed(1));
   document.getElementById('lentille2').setAttribute('cy',ey.toFixed(1));
-  if(running)pAnim=requestAnimationFrame(swingStep);
+  if(running) pAnim=requestAnimationFrame(swingStep);
 }
 function flash(b){
   const dots=document.getElementById('bRow').querySelectorAll('.dot');
@@ -291,7 +300,7 @@ function playMetal(t,a){
 }
 function playSound(t,a){if(timbre==='neutre')playNeutre(t,a);else if(timbre==='bois')playBois(t,a);else playMetal(t,a);}
 function schedule(){while(nextTime<ctx.currentTime+0.1){const b=(beat+1)%beats;playSound(nextTime,b===0);const delay=Math.max(0,(nextTime-ctx.currentTime)*1000);setTimeout(()=>{if(running)flash(b);},delay);beat=b;nextTime+=60/bpm;}timer=setTimeout(schedule,25);}
-function start(){makeCtx();running=true;beat=-1;nextTime=ctx.currentTime+0.05;document.getElementById('playBtn').textContent='Arrêter';document.getElementById('playBtn').classList.add('on');pAnim=requestAnimationFrame(swingStep);schedule();}
+function start(){makeCtx();running=true;beat=-1;nextTime=ctx.currentTime+0.05;swingStartTime=null;document.getElementById('playBtn').textContent='Arrêter';document.getElementById('playBtn').classList.add('on');pAnim=requestAnimationFrame(swingStep);schedule();}
 function stop(){running=false;clearTimeout(timer);cancelAnimationFrame(pAnim);document.getElementById('playBtn').textContent='Démarrer';document.getElementById('playBtn').classList.remove('on');beat=-1;pAngle=0;['pendule','lentille','lentille2'].forEach(id=>{const el=document.getElementById(id);if(id==='pendule'){el.setAttribute('x2','60');el.setAttribute('y2','80');}else{el.setAttribute('cx','60');el.setAttribute('cy','80');}});const dots=document.getElementById('bRow').querySelectorAll('.dot');dots.forEach((d,i)=>{d.classList.remove('flash','flash-ac');if(i===0)d.classList.add('ac');else d.classList.remove('ac');});}
 
 /* Tap tempo */
