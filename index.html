@@ -31,21 +31,17 @@
     .slider-row input[type=range] { flex: 1; accent-color: #8B6914; }
     .slider-end { font-size: 10px; color: #b0a080; min-width: 22px; font-family: system-ui, sans-serif; }
 
-    /* ── Accordéon ── */
-    .accordion { border-top: 1px solid #e8dece; }
-    .acc-header {
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 9px 0; cursor: pointer; user-select: none; -webkit-user-select: none;
+    /* ── Sections ── */
+    .section { border-top: 1px solid #e8dece; padding: 8px 0; }
+    .sec-label {
+      font-size: 13px;
+      font-family: Georgia, serif;
+      color: #2c2416;
+      text-align: center;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
     }
-    .acc-label { font-size: 10px; color: #8B6914; letter-spacing: 0.14em; text-transform: uppercase; font-family: system-ui, sans-serif; font-weight: 500; }
-    .acc-chevron {
-      font-size: 11px; color: #b0a080; transition: transform 0.2s;
-      font-family: system-ui, sans-serif; line-height: 1;
-    }
-    .acc-chevron.open { transform: rotate(180deg); }
-    .acc-body { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
-    .acc-body.open { max-height: 200px; }
-    .acc-inner { padding-bottom: 10px; }
 
     /* ── Boutons choix ── */
     .btn-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
@@ -133,53 +129,29 @@
     <span class="slider-end">208</span>
   </div>
 
-  <!-- Accordéon Métrique -->
-  <div class="accordion">
-    <div class="acc-header" id="hMetrique">
-      <span class="acc-label">Métrique</span>
-      <span class="acc-chevron" id="cMetrique">▼</span>
-    </div>
-    <div class="acc-body" id="bMetrique">
-      <div class="acc-inner">
-        <div class="btn-row" id="mRow">
-          <button class="btn on" data-n="4">4/4</button>
-          <button class="btn" data-n="2">2/4</button>
-          <button class="btn" data-n="3">3/4</button>
-          <button class="btn" data-n="5">5/4</button>
-          <button class="btn" data-n="6">6/8</button>
-        </div>
-      </div>
+  <div class="section">
+    <div class="sec-label">Métrique</div>
+    <div class="btn-row" id="mRow">
+      <button class="btn on" data-n="4">4/4</button>
+      <button class="btn" data-n="2">2/4</button>
+      <button class="btn" data-n="3">3/4</button>
+      <button class="btn" data-n="5">5/4</button>
+      <button class="btn" data-n="6">6/8</button>
     </div>
   </div>
 
-  <!-- Accordéon Timbre -->
-  <div class="accordion">
-    <div class="acc-header" id="hTimbre">
-      <span class="acc-label">Timbre</span>
-      <span class="acc-chevron" id="cTimbre">▼</span>
-    </div>
-    <div class="acc-body" id="bTimbre">
-      <div class="acc-inner">
-        <div class="btn-row" id="tRow">
-          <button class="btn on" data-t="neutre">Clic neutre</button>
-          <button class="btn" data-t="bois">Bois</button>
-          <button class="btn" data-t="metal">Métal</button>
-        </div>
-      </div>
+  <div class="section">
+    <div class="sec-label">Timbre</div>
+    <div class="btn-row" id="tRow">
+      <button class="btn on" data-t="neutre">Clic neutre</button>
+      <button class="btn" data-t="bois">Bois</button>
+      <button class="btn" data-t="metal">Métal</button>
     </div>
   </div>
 
-  <!-- Accordéon Pulsation -->
-  <div class="accordion">
-    <div class="acc-header" id="hPulsation">
-      <span class="acc-label">Pulsation</span>
-      <span class="acc-chevron" id="cPulsation">▼</span>
-    </div>
-    <div class="acc-body" id="bPulsation">
-      <div class="acc-inner">
-        <div class="beats-row" id="bRow"></div>
-      </div>
-    </div>
+  <div class="section">
+    <div class="sec-label">Pulsation</div>
+    <div class="beats-row" id="bRow"></div>
   </div>
 
   <button class="play-btn" id="playBtn">Démarrer</button>
@@ -254,18 +226,6 @@ function playSound(t,a){if(timbre==='neutre')playNeutre(t,a);else if(timbre==='b
 function schedule(){while(nextTime<ctx.currentTime+0.1){const b=(beat+1)%beats;playSound(nextTime,b===0);const delay=Math.max(0,(nextTime-ctx.currentTime)*1000);setTimeout(()=>{if(running)flash(b);},delay);beat=b;nextTime+=60/bpm;}timer=setTimeout(schedule,25);}
 function start(){makeCtx();running=true;beat=-1;nextTime=ctx.currentTime+0.05;document.getElementById('playBtn').textContent='Arrêter';document.getElementById('playBtn').classList.add('on');pAnim=requestAnimationFrame(swingStep);schedule();}
 function stop(){running=false;clearTimeout(timer);cancelAnimationFrame(pAnim);document.getElementById('playBtn').textContent='Démarrer';document.getElementById('playBtn').classList.remove('on');beat=-1;pAngle=0;['pendule','lentille','lentille2'].forEach(id=>{const el=document.getElementById(id);if(id==='pendule'){el.setAttribute('x2','60');el.setAttribute('y2','80');}else{el.setAttribute('cx','60');el.setAttribute('cy','80');}});const dots=document.getElementById('bRow').querySelectorAll('.dot');dots.forEach((d,i)=>{d.classList.remove('flash','flash-ac');if(i===0)d.classList.add('ac');else d.classList.remove('ac');});}
-
-/* Accordéon */
-function toggleAcc(bodyId, chevronId){
-  const body=document.getElementById(bodyId);
-  const chev=document.getElementById(chevronId);
-  const isOpen=body.classList.contains('open');
-  body.classList.toggle('open',!isOpen);
-  chev.classList.toggle('open',!isOpen);
-}
-document.getElementById('hMetrique').addEventListener('click',()=>toggleAcc('bMetrique','cMetrique'));
-document.getElementById('hTimbre').addEventListener('click',()=>toggleAcc('bTimbre','cTimbre'));
-document.getElementById('hPulsation').addEventListener('click',()=>toggleAcc('bPulsation','cPulsation'));
 
 /* Tap tempo */
 let tapTimes=[],tapResetTimer=null;
